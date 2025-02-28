@@ -24,6 +24,8 @@ expInfo = {
     'doPractice': True,
 }
 
+TextHeight = 0.05#0.035
+
 dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys=False, title=expName)
 if dlg.OK == False:
     core.quit()
@@ -183,15 +185,15 @@ timeout_feedback = visual.TextStim(win=win, name='feedback_text',
 text_instr = visual.TextStim(win=win, name='text_instr',
     text='',
     font='Open Sans',
-    pos=(0, 0), height=0.035, wrapWidth=None, ori=0.0, 
+    pos=(0, 0), height=TextHeight, wrapWidth=1.4, ori=0.0, #wrapWidth=None
     color='white', colorSpace='rgb', opacity=None, 
     languageStyle='LTR',
     depth=-1.0)
 
 text_end = visual.TextStim(win=win, #name='text_instr',
-    text='Thanks for completing the task! Press any key to exit.',
+    text='Thanks for completing the task! \n Press any key to exit.',
     font='Open Sans',
-    pos=(0, 0), height=0.035, wrapWidth=None, ori=0.0, 
+    pos=(0, 0), height=TextHeight, wrapWidth=None, ori=0.0, 
     color='white', colorSpace='rgb', opacity=None, 
     languageStyle='LTR',
     depth=-1.0)
@@ -265,16 +267,60 @@ def run_trials(trials, stage):
         thisExp.addData('RT', timestamp)
         thisExp.addData('FixationOnTime', FixationOnTime[trial_num])
         thisExp.nextEntry()
-
+#--------------------------------------------------------------------------------------------------------------
+'''
+# text_instr.setText(
+#         "In this experiment you will see five fish in a line. \n Some are facing left and some right. "
+#         "You need to feed the fish in the middle of the row and to do this you need to mark which way the fish is looking. "
+#         "For instance, you might see five fish. Your task is to respond by pressing the key corresponding to the middle fish. "
+#         "After each respond you will get feedback about whether you were correct or not. We will start with a short practice set.\n\n"
+#         "Press any key to start the experiment.")
 text_instr.setText(
-        "In this experiment you will see five fish in a line. Some are facing left and some right. "
-        "You need to feed the fish in the middle of the row and to do this you need to mark which way the fish is looking. "
-        "For instance, you might see five fish. Your task is to respond by pressing the key corresponding to the middle fish. "
-        "After each respond you will get feedback about whether you were correct or not. We will start with a short practice set.\n\n"
-        "Press any key to start the experiment.")
+        "You will see five fish in a row, some facing left, some right.\n"
+        "Your task is to identify the direction of the middle fish by pressing the corresponding key.\n\n"
+        "Press any key to continue.")
 text_instr.draw()
 win.flip()
 event.waitKeys()
+'''
+#--------------------------------------------------------------------------------------------------------------
+def show_text_with_blink(text, blink_count, blink_duration=0.2, inter_blink_interval=0.2):
+    """
+    Displays the provided text (using text_instr) while overlaying a blinking square.
+    The square will blink for a total duration determined by blink_count cycles.
+    The routine runs continuously until the participant presses 'return'.
+    """
+    total_duration = blink_count * (blink_duration + inter_blink_interval)
+    # Use a separate clock for the blinking routine.
+    clock = core.Clock()
+    # Clear any previous key events
+    event.clearEvents()
+    while True:
+        # Draw the instruction text.
+        text_instr.setText(text)
+        text_instr.draw()
+        
+        # Determine whether to draw the square (blink effect).
+        t = clock.getTime()
+        if t < total_duration:
+            cycle = blink_duration + inter_blink_interval
+            # During the "on" phase of the blink cycle, draw the square.
+            if (t % cycle) < blink_duration:
+                square.draw()
+        
+        win.flip()
+        
+        # Check if the participant pressed 'return'
+        keys = event.getKeys(keyList=['return'])
+        if keys:
+            break
+
+show_text_with_blink("You will see five fish in a row, some facing left, some right.\n Your task is to identify the direction of the middle fish by pressing the corresponding key.\n\n Press any key to continue.", blink_count=4)
+# text_instr1.setText("In this game, you'll see animals appear one by one.\n Your task is to detect when the current animal matches the one shown N steps earlier.\n\n Press enter to continue.")
+# text_instr1.draw()
+# win.flip()
+# event.waitKeys()
+#---------------------------------------------------------------------------------------------------------------
 
 def get_instruction_text(block_num, num_blocks):
     if block_num == 1:
@@ -290,7 +336,7 @@ trialClock = core.Clock()
 
 if expInfo['doPractice']:
 
-    text_instr.setText('Let\'s practice. During practice you\'ll see if you are correct or incorrect after responding. After practice we\'ll go again but without the correct / incorrect feedback.\n\nPress enter to begin.')
+    text_instr.setText('Let\'s practice. \n During practice you\'ll see if you are correct or incorrect after responding. \n After practice we\'ll go again but without the correct / incorrect feedback.\n\nPress enter to begin.')
     text_instr.draw()
     win.callOnFlip(globalClock.reset)
     win.callOnFlip(lambda: thisExp.addData('Practice_InstrStart_globalClock', globalClock.getTime()))
@@ -333,6 +379,7 @@ for block_trials in [block1, block2, block3]:
     keys  = event.waitKeys(keyList=['return'], timeStamped=blockClock)
     timestamp = keys[0][1]
     thisExp.addData('TestBlockStartRT', timestamp)
+    thisExp.addData('current_block', current_block)
     thisExp.nextEntry()
     check_for_escape()
     run_trials(block_trials, 'test')

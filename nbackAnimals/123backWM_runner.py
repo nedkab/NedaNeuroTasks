@@ -136,13 +136,13 @@ def cnbm(stim_arr, n):
     return count_matches
 
 
-def gen_set(objects, n):
+def gen_set(objects, n, sequence_length):#def gen_set(objects, n):
     max_iterations = 1000
     iteration_count = 0
     threshold = 0.30
 
     while iteration_count < max_iterations:
-        length = 20
+        length = sequence_length  #num_trials
         array = objects[:]
         
         while len(array) < length:
@@ -254,21 +254,33 @@ timeout_feedback = visual.TextStim(win=win, name='feedback_text',
     languageStyle='LTR',
     depth=-4.0)
 
+TextHeight = 0.05#0.035
+
 text_instr1 = visual.TextStim(win=win, name='practice_text',
-    text="Let's play a memory game! Focus will be important here, so before we begin please make sure you're ready for about ten minutes of uninterrupted game time! You will have opportunity to take short breaks throughout. Press enter to continue.",
+    text="Let's play a memory game! \n Stay focused and be ready to give it your best. \n\n Press enter to continue.",
     font='Open Sans',
-    pos=(0, 0), height=0.035, wrapWidth=None, ori=0.0, 
+    pos=(0, 0), height=TextHeight, wrapWidth=None, ori=0.0, 
     color='white', colorSpace='rgb', opacity=None, 
     languageStyle='LTR',
     depth=-1.0)
 
 
+'''
 instruction_text = [
     'In this game you will see a series of animals. Your goal is to identify when an animal is the same or different from the one you saw N-items back in the sequence. "N" is the number of items that you need to keep in memory.',
-    'Let\'s start with the 1-back. The object of the 1-back is to identify when the animal you see is the same or different from the animal you saw 1 item back. In the example below, the current animal is a bee, and 1-back animal was also a bee, so we have a 1-back match!',
-    'You will also identify mis-matches. In the example, the current object is a bee but the 1-back animal was a whale, so we have a 1-back mis-match.',
-    'The animals will be presented one after another in a sequence. Can you spot the 1-back matches and mis-matches?',
-    'Place your fingers on the YES and NO keys. MATCH: If you see an object that\'s a 1-back match press the YES key. MIS-MATCH: If you see an object that\'s 1-back mis-match press the NO key.'
+    'Let\'s start with the 1-back. The object of the 1-back is to identify when the animal you see is the same or different from the animal you saw 1 item back. In the example below, the current animal is a bee, and 1-back animal was also a bee, so we have a 1-back **match**!',
+    'You will also identify mis-matches. In the example, the current object is a bee but the 1-back animal was a whale, so we have a 1-back **mis-match**.',
+    'The animals will be presented one after another in a sequence. \n Can you spot the 1-back matches and mis-matches? \n',
+    'Place your fingers on the YES and NO keys. \n MATCH: If you see an object that\'s a 1-back match press the YES key. \n MIS-MATCH: If you see an object that\'s 1-back mis-match press the NO key.'
+]
+'''
+
+instruction_text = [
+    "Let's start with 1-back. If the current animal is the same as the previous one, press YES. If different, press NO.",
+    "You also need to identify mis-matches. If the current animal does not match the previous one, press NO.",
+    "For 2-back, compare the current animal to the one shown two steps earlier and respond accordingly.",
+    "For 3-back, compare the current animal to the one shown three steps earlier. Stay focused and respond as accurately as possible.",
+    "Use the YES key for matches and NO key for mis-matches. Get ready!"
 ]
 
 instruction_images = [
@@ -276,45 +288,113 @@ instruction_images = [
     "imgs/1back_diagram_nonmatch.png",
     "imgs/2back_diagram.png",
     "imgs/3back_diagram.png",
-    "imgs/arrow_keys.png"]
+    "imgs/arrow_keys.png"
+]
 
-def run_instructions(win, pages, images=None):
-    if images is None:
-        images = []
+# def run_instructions(win, pages, images):
+#     """
+#     Displays each instruction text along with its corresponding image.
+#     The image is drawn first, then the text is drawn on top.
+#     The image size and position are adjusted so that it isn’t cropped.
+#     Users press 'return' to proceed.
+#     """
+#     kb = keyboard.Keyboard()
+    
+#     for text, img in zip(pages, images):
+#         ## Adjust image: increase its height and shift upward to avoid bottom cropping.
+#         # instr_image = visual.ImageStim(
+#         #     win, image=img, 
+#         #     size=(0.65, 0.7),   # increased height from 0.5 to 0.7
+#         #     pos=(0, -0.1)       # moved image upward from -0.3 to -0.1
+#         # )
+#         instr_image = visual.ImageStim(win, image=img, pos=(0, -0.1))
 
+        
+#         # Create the text stimulus to appear above the image.
+#         instr_text = visual.TextStim(
+#             win, text=text, 
+#             color="white", 
+#             height=0.06, 
+#             wrapWidth=1.4, 
+#             pos=(0, 0.4),       # changed from (0, 0.7) to (0, 0.4) so text is visible
+#             alignHoriz='center'
+#         )
+        
+#         # Draw image first, then text so that the text remains on top.
+#         instr_image.draw()
+#         instr_text.draw()
+        
+#         win.flip()
+        
+#         kb.clearEvents()
+#         while True:
+#             keys = kb.getKeys(keyList=['return'], waitRelease=True)
+#             if keys:
+#                 break  # Proceed when 'return' is pressed
+from PIL import Image
+
+def get_scaled_size(img_path, base_height=0.4, scale=1.1):
+    # Open the image to get its original dimensions
+    im = Image.open(img_path)
+    orig_width, orig_height = im.size
+    aspect = orig_width / orig_height
+    # Calculate new dimensions with a modest increase
+    new_height = base_height * scale  # e.g., 0.4 * 1.1 = 0.44
+    new_width = new_height * aspect
+    return (new_width, new_height)
+
+def run_instructions(win, pages, images):
     kb = keyboard.Keyboard()
-
-    for page in pages:
-        instr_text = visual.TextStim(win, text=page, color="white", height=0.05, wrapWidth=1.5)
+    
+    for text, img in zip(pages, images):
+        # Calculate scaled size with a smaller base height
+        scaled_size = get_scaled_size(img, base_height=0.4, scale=1.1)
+        
+        # Position the image in the lower half so it won't be cropped
+        instr_image = visual.ImageStim(
+            win, image=img, 
+            size=scaled_size,
+            pos=(0, -0.1)  # Lower position to ensure full image visibility
+        )
+        
+        # Position the text above the image in the upper half
+        instr_text = visual.TextStim(
+            win, text=text, 
+            color="white", 
+            height=0.06, 
+            wrapWidth=1.4, 
+            pos=(0, 0.3),  # Adjusted so it appears within the window
+            alignHoriz='center'
+        )
+        
+        # Draw the image first, then the text on top
+        instr_image.draw()
         instr_text.draw()
         win.flip()
-
-        kb.clearEvents()
         
-        while True:
-            keys = kb.getKeys(keyList=['return'], waitRelease=True) 
-            if keys:  # Proceed if 'return' was pressed and released
-                break 
-
-    for img in images:
-        instr_image = visual.ImageStim(win, image=img, size=0.8)
-        instr_image.draw()
-        win.flip()
-
         kb.clearEvents()
-
         while True:
             keys = kb.getKeys(keyList=['return'], waitRelease=True)
-            if keys:  
-                break 
+            if keys:
+                break  # Proceed when 'return' is pressed
 
+#+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 fixation = visual.TextStim(win, text='+', color='white')
 
 def create_trials(objects, num_trials, delay):
     trials = []
-    stim_sequence = gen_set(objects, delay)
-    for i in range(num_trials + delay):
+
+    # Use 10 trials for 1-back blocks, 20 for others.
+    if delay == 1:
+        block_trial_count = 10
+    else:
+        block_trial_count = num_trials
+
+    #stim_sequence = gen_set(objects, delay)
+    stim_sequence = gen_set(objects, delay, sequence_length=block_trial_count)
+
+    for i in range(block_trial_count + delay):#for i in range(num_trials + delay):
         stim = stim_sequence[i]
         if i >= delay:
             target = stim_sequence[i - delay]
@@ -395,11 +475,63 @@ def run_trials(trials, stage):
         thisExp.nextEntry()
 
     return correct_responses
+#=======================================================================================================================================
+# def blink_square(n, blink_duration=0.2, inter_blink_interval=0.2):
+#     """Draws the square stimulus n times, each shown for blink_duration with a blank interval after."""
+#     for i in range(n):
+#         square.draw()
+#         win.flip()
+#         core.wait(blink_duration)
+#         win.flip()  # clear the window
+#         core.wait(inter_blink_interval)
+
+
+def show_text_with_blink(text, blink_count, blink_duration=0.2, inter_blink_interval=0.2):
+    """
+    Displays the provided text (using text_instr1) while overlaying a blinking square.
+    The square will blink for a total duration determined by blink_count cycles.
+    The routine runs continuously until the participant presses 'return'.
+    """
+    total_duration = blink_count * (blink_duration + inter_blink_interval)
+    # Use a separate clock for the blinking routine.
+    clock = core.Clock()
+    # Clear any previous key events
+    event.clearEvents()
+    while True:
+        # Draw the instruction text.
+        text_instr1.setText(text)
+        text_instr1.draw()
+        
+        # Determine whether to draw the square (blink effect).
+        t = clock.getTime()
+        if t < total_duration:
+            cycle = blink_duration + inter_blink_interval
+            # During the "on" phase of the blink cycle, draw the square.
+            if (t % cycle) < blink_duration:
+                square.draw()
+        
+        win.flip()
+        
+        # Check if the participant pressed 'return'
+        keys = event.getKeys(keyList=['return'])
+        if keys:
+            break
+
+#=======================================================================================================================================
 
 text_instr1.draw()
 win.flip()
 event.waitKeys()
+
+show_text_with_blink("In this game, you'll see animals appear one by one.\nYour task is to detect when the current animal matches the one shown N steps earlier.\n\nPress enter to continue.", blink_count=4)
+# text_instr1.setText("In this game, you'll see animals appear one by one.\n Your task is to detect when the current animal matches the one shown N steps earlier.\n\n Press enter to continue.")
+# text_instr1.draw()
+# win.flip()
+# event.waitKeys()
+
 run_instructions(win, instruction_text, instruction_images)
+# blink_square(4)
+
 globalClock = core.Clock() 
 blockClock = core.Clock()
 trialClock = core.Clock()
@@ -450,6 +582,8 @@ for block in range(num_blocks):
     test_trials = create_trials(objects, num_trials, delay)
     text_instr1.setText(block_text)
     text_instr1.draw()
+    #show_text_with_blink(block_text, blink_count=2)
+    
     win.callOnFlip(blockClock.reset)
     win.callOnFlip(lambda: thisExp.addData('TestBlock_InstrStart_globalClock', globalClock.getTime()))
     win.callOnFlip(lambda: thisExp.addData('TestBlock_InstrStart_blockClock', blockClock.getTime()))
@@ -465,6 +599,8 @@ for block in range(num_blocks):
 
     timestamp = keys[0][1]
     thisExp.addData('TestBlockStartRT', timestamp)
+    thisExp.addData('current_block', current_block)
+    thisExp.addData('delay', delay)
     thisExp.nextEntry()
     check_for_escape()
     correct_responses = run_trials(test_trials, 'test') 
