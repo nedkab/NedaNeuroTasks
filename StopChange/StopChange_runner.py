@@ -34,17 +34,21 @@ practiceConditionsFile = 'PracticeTrialConditions.csv'
 mainConditionsFile     = 'MainTrialConditions.csv'
 
 # Number of practice reps (4 if doPractice, else 0)
-practiceReps = 4  
+practiceReps = 2#4  
 
 # Number of main blocks and repetitions within each block
-nMainBlocks = 4  
+nMainBlocks = 3#4  
 blockReps   = 2  
-
+#8*2*(3+1)=64
+FixationOnTime = [random.uniform(1.5, 2.5) for _ in range(64)]#[random.uniform(1.5, 2.5) for _ in range(TotTrials)]
+PostTrialWaitTime = 0.5
 # -------------------------------------------------------------------------
 # --------------------------- DIALOG / SETUP -------------------------------
 # -------------------------------------------------------------------------
-_thisDir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(_thisDir)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+_thisDir = os.path.dirname(os.path.abspath(__file__)) #os.path.dirname(__file__)
+os.chdir(_thisDir)# Now, the current working directory is the same as the script's directory,and you can access files and directories relative to this location.
+
 
 expName = 'StopChangeTask'
 from numpy.random import randint
@@ -57,26 +61,52 @@ dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys=False, title=expName)
 if not dlg.OK:
     core.quit()
 
+expInfo['date'] = datetime.now().strftime('%Y-%m-%d_%H%M%S.%f')
+corTime = core.getTime() 
+expInfo['coreTime'] =  datetime.fromtimestamp(corTime).strftime('%Y-%m-%d_%H%M%S.%f')
+
+
 if isinstance(expInfo['doPractice'], str):
     expInfo['doPractice'] = (expInfo['doPractice'].lower() == 'true')
 
-filename = os.path.join(_thisDir, 'data',
-    f"{expInfo['participant']}_{expName}_{data.getDateStr()}")
-thisExp = data.ExperimentHandler(name=expName,
-                                 version='',
-                                 extraInfo=expInfo,
-                                 dataFileName=filename)
+# filename = os.path.join(_thisDir, 'data',
+#     f"{expInfo['participant']}_{expName}_{data.getDateStr()}")
+filename = _thisDir + os.sep + u'data/%s_%s_%s' % (expInfo['participant'], expName, expInfo['date'])
 logging.console.setLevel(logging.WARNING)
+
+data_dir = "data"
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
+
+# thisExp = data.ExperimentHandler(name=expName,
+#                                  version='',
+#                                  extraInfo=expInfo,
+#                                  dataFileName=filename)
+thisExp = data.ExperimentHandler(name=expName, version='',
+    extraInfo=expInfo, runtimeInfo=None,
+    savePickle=True, saveWideText=True,
+    dataFileName=filename)
 
 # -------------------------------------------------------------------------
 # --------------------------- WINDOW ---------------------------------------
 # -------------------------------------------------------------------------
+from psychopy import monitors
+monitor = monitors.Monitor('testMonitor')
+monitor.setWidth(40) 
+monitor.setDistance(60)
+monitor.save()
+winSize=monitor.getSizePix()
 win = visual.Window(
-    size=[1920, 1080], fullscr=True, screen=0,
-    winType='pyglet', monitor='testMonitor',
-    color=[-1, -1, -1], colorSpace='rgb',
-    units='height'
-)
+    size=winSize, fullscr=True, screen=1, 
+    winType='pyglet', allowStencil=False,
+    monitor='testMonitor', color='black', colorSpace='rgb',
+    blendMode='avg', useFBO=True, units='height')
+# win = visual.Window(
+#     size=[1920, 1080], fullscr=True, screen=0,
+#     winType='pyglet', monitor='testMonitor',
+#     color=[-1, -1, -1], colorSpace='rgb',
+#     units='height'
+# )
 win.mouseVisible = False
 
 # -------------------------------------------------------------------------
@@ -133,21 +163,28 @@ fuelStim = visual.ImageStim(
 fixationCross = visual.TextStim(
     win=win,
     text='+',
-    height=0.07,
+    height=0.2,#0.07,
     color='white'
 )
 
-instrText = visual.TextStim(
-    win=win,
+
+# instrText = visual.TextStim(
+#     win=win,
+#     text="",
+#     wrapWidth=1.2,#height=0.05, 
+#     color='white')
+instrText = visual.TextStim(win=win,
     text="",
-    height=0.05, 
-    color='white'
-)
+    font='Open Sans',
+    pos=(0, 0), height=0.05, wrapWidth=None, ori=0.0, 
+    color='white', colorSpace='rgb', opacity=None, 
+    languageStyle='LTR',
+    depth=-1.0)
 
 # Square trigger (as in KidFlanker_runner.py)
 square_size=0.1
 square_position=(0.8 - square_size/2, -0.5 + square_size/2)
-blinkSquare = visual.Rect(
+square = visual.Rect(
     win=win,
     width=square_size,
     height=square_size,
@@ -165,38 +202,81 @@ feedbackText = visual.TextStim(win=win, text="", height=0.05, color='white')
 doneText     = visual.TextStim(win=win, text="Done!\nPress any key to exit.", height=0.05, color='white')
 
 # Optional blink at start
-def doBlink(num=4, onTime=0.2, offTime=0.2):
-    for _ in range(num):
-        blinkSquare.setAutoDraw(True)
-        win.flip()
-        core.wait(onTime)
-        blinkSquare.setAutoDraw(False)
-        win.flip()
-        core.wait(offTime)
+# def doBlink(num=4, onTime=0.2, offTime=0.2):
+#     for _ in range(num):
+#         square.setAutoDraw(True)
+#         win.flip()
+#         core.wait(onTime)
+#         square.setAutoDraw(False)
+#         win.flip()
+#         core.wait(offTime)
 
-doBlink()
+# doBlink()
+# -------------------------------------------------------------------------
+instrText.setText("Welcome to the task! Stay focused and respond as quickly and accurately as possible.\n\n Press Enter to start.")
+# text_instr.setText("You will see five fish in a row, some facing left, some right.\n Your task is to identify the direction of the middle fish by pressing the corresponding key.\n\n Press Enter to continue.")
+instrText.draw()
+win.flip()
+event.waitKeys()
 
 # -------------------------------------------------------------------------
 # --------------------------- INSTRUCTIONS ---------------------------------
 # -------------------------------------------------------------------------
+# if expInfo['doPractice']:
+#     instr = ("On each trial:\n\n"
+#              " - Plane points LEFT or RIGHT ⇒ press that arrow.\n\n"
+#              " - If 'fuel gauge' appears ⇒ press DOWN arrow *instead*.\n\n"
+#              "We'll do practice first (with feedback).\n\n"
+#              "Press SPACE to begin practice.")
+# else:
+#     instr = ("On each trial:\n\n"
+#              " - Plane points LEFT or RIGHT ⇒ press that arrow.\n\n"
+#              " - If 'fuel gauge' appears ⇒ press DOWN arrow *instead*.\n\n"
+#              "No practice. We'll go straight to main task.\n\n"
+#              "Press SPACE to begin.")
+# instrText.text = instr
+# instrText.draw()
+# win.flip()
+# wait_for_space()
+def show_text_with_blink(text, blink_count, blink_duration=0.2, inter_blink_interval=0.2):
+
+    total_duration = blink_count * (blink_duration + inter_blink_interval)
+    # Use a separate clock for the blinking routine.
+    clock = core.Clock()
+    # Clear any previous key events
+    event.clearEvents()
+    while True:
+        # Draw the instruction text.
+        instrText.setText(text)
+        instrText.draw()
+        
+        # Determine whether to draw the square (blink effect).
+        t = clock.getTime()
+        if t < total_duration:
+            cycle = blink_duration + inter_blink_interval
+            # During the "on" phase of the blink cycle, draw the square.
+            if (t % cycle) < blink_duration:
+                square.draw()
+        
+        win.flip()
+        # wait_for_space()
+        keys = event.getKeys(keyList=['space'])
+        if keys:
+            break
+
 if expInfo['doPractice']:
-    instr = ("Stop-Change Task\n\n"
-             "On each trial:\n"
-             " - Plane points LEFT or RIGHT ⇒ press that arrow.\n"
-             " - If 'fuel gauge' appears ⇒ press DOWN arrow *instead*.\n\n"
-             "We'll do practice first (with feedback).\n\n"
+    instr = ("On each trial:\n\n"
+             "If the plane points left or right, press the matching arrow key.\n\n"
+             "If a fuel gauge appears, press the down arrow instead.\n\n"
+             "We'll start with practice, with feedback on your answers.\n\n"
              "Press SPACE to begin practice.")
 else:
-    instr = ("Stop-Change Task\n\n"
-             "On each trial:\n"
-             " - Plane points LEFT or RIGHT ⇒ press that arrow.\n"
-             " - If 'fuel gauge' appears ⇒ press DOWN arrow *instead*.\n\n"
+    instr = ("On each trial:\n\n"
+             "If the plane points left or right, press the matching arrow key.\n\n"
+             "If a fuel gauge appears, press the down arrow instead.\n\n"
              "No practice. We'll go straight to main task.\n\n"
              "Press SPACE to begin.")
-instrText.text = instr
-instrText.draw()
-win.flip()
-wait_for_space()
+show_text_with_blink(instr, blink_count=4)
 
 # -------------------------------------------------------------------------
 # --------------------------- PRACTICE TRIALS ------------------------------
@@ -225,18 +305,22 @@ p_numStopFail = 0
 win.flip()
 core.wait(prepareBlockDur)
 
+trial_num = 0
 for trial in practiceTrials:
+    trial_num = trial_num+1
     arrowDirRaw = trial['arrowDirection'].strip().lower()  # 'left' or 'right'
     stopGoRaw   = trial['stopOrGo'].strip().lower()         # 'go' or 'stop'
 
     # 1) Fixation
-    fixDur = random.uniform(*fixationSpan)
+    #fixDur = random.uniform(*fixationSpan)
     fixationCross.setAutoDraw(True)
     win.callOnFlip(log_on_flip("PracticeFix_onset"))
     win.flip()
-    core.wait(fixDur)
+    core.wait(FixationOnTime[trial_num])
+    #core.wait(fixDur)
     fixationCross.setAutoDraw(False)
     win.flip()
+    core.wait(PostTrialWaitTime)
     check_for_esc()
 
     # 2) Show plane and trigger square; if STOP trial, later show fuel cue.
@@ -246,7 +330,7 @@ for trial in practiceTrials:
         planeStim.image = planeRightPath
 
     planeStim.setAutoDraw(True)
-    blinkSquare.setAutoDraw(True)
+    square.setAutoDraw(True)
     fuelStim.setAutoDraw(False)
 
     # Clear any leftover key events from the keyboard
@@ -292,7 +376,7 @@ for trial in practiceTrials:
         win.flip()
 
     planeStim.setAutoDraw(False)
-    blinkSquare.setAutoDraw(False)
+    square.setAutoDraw(False)
     fuelStim.setAutoDraw(False)
     win.flip()
 
@@ -308,16 +392,32 @@ for trial in practiceTrials:
         else:
             p_numGoOmit += 1
             p_goRTs.append(maxResponseTime)
-    else:
+    # else:
+    #     p_numStop += 1
+    #     if responded and pressed in downKeys:
+    #         wasCorrect = True
+    #     if wasCorrect:
+    #         practiceSSD += ssdIncrement
+    #     else:
+    #         practiceSSD = max(0, practiceSSD - ssdDecrement)
+    #         if responded:
+    #             p_numStopFail += 1
+    else: #stopGoRaw == 'stop':
         p_numStop += 1
-        if responded and pressed in downKeys:
-            wasCorrect = True
-        if wasCorrect:
-            practiceSSD += ssdIncrement
-        else:
-            practiceSSD = max(0, practiceSSD - ssdDecrement)
-            if responded:
+        if responded:
+            if pressed in downKeys:
+                wasCorrect = True
+                practiceSSD += ssdIncrement
+            else:
+                wasCorrect = False
+                practiceSSD = max(0, practiceSSD - ssdDecrement)
                 p_numStopFail += 1
+        else:
+            # Consider no response as a failure in a stop-change task
+            wasCorrect = False
+            practiceSSD = max(0, practiceSSD - ssdDecrement)
+            p_numStopFail += 1
+
 
     # 4) Provide feedback (practice only)
     if wasCorrect:
@@ -402,17 +502,20 @@ for block in mainBlocks:
     b_numStopFail = 0
 
     for t in trials:
+        trial_num = trial_num+1
         arrowDirRaw = t['arrowDirection'].strip().lower()
         stopGoRaw   = t['stopOrGo'].strip().lower()
 
         # Fixation
-        fixDur = random.uniform(*fixationSpan)
+        #fixDur = random.uniform(*fixationSpan)
         fixationCross.setAutoDraw(True)
         win.callOnFlip(log_on_flip(f"Block{blockIdx}_Fix_onset"))
         win.flip()
-        core.wait(fixDur)
+        core.wait(FixationOnTime[trial_num])
+        #core.wait(fixDur)
         fixationCross.setAutoDraw(False)
         win.flip()
+        core.wait(PostTrialWaitTime)
         check_for_esc()
 
         # Plane and square; display fuel cue for STOP trials after SSD delay
@@ -422,7 +525,7 @@ for block in mainBlocks:
             planeStim.image = planeRightPath
 
         planeStim.setAutoDraw(True)
-        blinkSquare.setAutoDraw(True)
+        square.setAutoDraw(True)
         fuelStim.setAutoDraw(False)
         #event.clearEvents()
         # Clear any leftover key events from the keyboard
@@ -469,7 +572,7 @@ for block in mainBlocks:
             win.flip()
 
         planeStim.setAutoDraw(False)
-        blinkSquare.setAutoDraw(False)
+        square.setAutoDraw(False)
         fuelStim.setAutoDraw(False)
         win.flip()
 

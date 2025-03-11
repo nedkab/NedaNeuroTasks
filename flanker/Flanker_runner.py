@@ -24,8 +24,6 @@ expInfo = {
     'doPractice': True,
 }
 
-TextHeight = 0.05#0.035
-
 dlg = gui.DlgFromDict(dictionary=expInfo, sortKeys=False, title=expName)
 if dlg.OK == False:
     core.quit()
@@ -67,7 +65,7 @@ correct_responses = {'images/rrlrr.png': 'left', 'images/llrll.png': 'right', 'i
 
 StimuliPool =  ['images/rrlrr.png', 'images/llrll.png', 'images/lllll.png', 'images/rrrrr.png']
 imgSize = (0.1, 0.1)
-
+# -------------------------------------------------------------------------
 attention_check_thresh = 0.65
 maxResponseTime = 2.0 
 FeedbackOnTime = 0.5 
@@ -75,7 +73,7 @@ practice_len = 5
 num_blocks = 3
 num_trials = 20
 exp_len = 60
-
+# -------------------------------------------------------------------------
 FixationOnTime = [random.uniform(1.5, 2.5) for _ in range(exp_len + practice_len )]#[random.uniform(1.5, 2.5) for _ in range(TotTrials)]
 PostTrialWaitTime = 0.5
 
@@ -84,12 +82,14 @@ current_block = 0
 new_block = 0
 stims = []
 correct_response = ""
-
+# -------------------------------------------------------------------------
 def check_for_escape():
     if 'escape' in event.getKeys():
+        thisExp.saveAsWideText(filename+'.csv', delim='auto')
+        thisExp.saveAsPickle(filename)
         win.close()
         core.quit()
-
+# -------------------------------------------------------------------------
 from psychopy import monitors
 monitor = monitors.Monitor('testMonitor')
 monitor.setWidth(40) 
@@ -102,7 +102,7 @@ win = visual.Window(
     monitor='testMonitor', color='black', colorSpace='rgb',
     blendMode='avg', useFBO=True, units='height')
 win.mouseVisible = False
-
+# -------------------------------------------------------------------------
 preloadedImages = {}
 for stimulus in test_stimuli:
     image_path = stimulus['image']
@@ -115,7 +115,7 @@ for stimulus in test_stimuli:
     else:
         logging.exp(f'Image path {image_path} does not exist')
 del image_path
-
+# -------------------------------------------------------------------------
 practice_nReps = (practice_len // len(test_stimuli)) + 1
 practice_stimuli_with_reps = test_stimuli * practice_nReps
 random.shuffle(practice_stimuli_with_reps)
@@ -182,10 +182,11 @@ timeout_feedback = visual.TextStim(win=win, name='feedback_text',
     languageStyle='LTR',
     depth=-4.0)
 
+TextHeight = 0.05#0.035
 text_instr = visual.TextStim(win=win, name='text_instr',
     text='',
     font='Open Sans',
-    pos=(0, 0), height=TextHeight, wrapWidth=1.4, ori=0.0, #wrapWidth=None
+    pos=(0, 0), height=TextHeight, wrapWidth=None, ori=0.0, #wrapWidth=1.4
     color='white', colorSpace='rgb', opacity=None, 
     languageStyle='LTR',
     depth=-1.0)
@@ -267,22 +268,7 @@ def run_trials(trials, stage):
         thisExp.addData('RT', timestamp)
         thisExp.addData('FixationOnTime', FixationOnTime[trial_num])
         thisExp.nextEntry()
-#--------------------------------------------------------------------------------------------------------------
-'''
-# text_instr.setText(
-#         "In this experiment you will see five fish in a line. \n Some are facing left and some right. "
-#         "You need to feed the fish in the middle of the row and to do this you need to mark which way the fish is looking. "
-#         "For instance, you might see five fish. Your task is to respond by pressing the key corresponding to the middle fish. "
-#         "After each respond you will get feedback about whether you were correct or not. We will start with a short practice set.\n\n"
-#         "Press any key to start the experiment.")
-text_instr.setText(
-        "You will see five fish in a row, some facing left, some right.\n"
-        "Your task is to identify the direction of the middle fish by pressing the corresponding key.\n\n"
-        "Press any key to continue.")
-text_instr.draw()
-win.flip()
-event.waitKeys()
-'''
+
 #--------------------------------------------------------------------------------------------------------------
 def show_text_with_blink(text, blink_count, blink_duration=0.2, inter_blink_interval=0.2):
     """
@@ -315,9 +301,18 @@ def show_text_with_blink(text, blink_count, blink_duration=0.2, inter_blink_inte
         if keys:
             break
 
-show_text_with_blink("You will see five fish in a row, some facing left, some right.\n Your task is to identify the direction of the middle fish by pressing the corresponding key.\n\n Press any key to continue.", blink_count=4)
-# text_instr1.setText("In this game, you'll see animals appear one by one.\n Your task is to detect when the current animal matches the one shown N steps earlier.\n\n Press enter to continue.")
-# text_instr1.draw()
+text_instr.setText("You'll see five fish in a row. Your goal is to identify the direction of the middle fish.\n\n Press Enter to continue.")
+# text_instr.setText("You will see five fish in a row, some facing left, some right.\n Your task is to identify the direction of the middle fish by pressing the corresponding key.\n\n Press Enter to continue.")
+text_instr.draw()
+win.flip()
+event.waitKeys()
+
+
+# show_text_with_blink("You will see five fish in a row, some facing left, some right.\n Your task is to identify the direction of the middle fish by pressing the corresponding key.\n\n Press Enter to continue.", blink_count=4)
+show_text_with_blink("Press the key that matches the middle fish’s direction. Ignore the other fish.\n\n Press Enter to continue.", blink_count=4)
+#---------------------------------------------------------------------------------------------------------------
+# text_instr.setText("You will see five fish in a row, some facing left, some right.\n Your task is to identify the direction of the middle fish by pressing the corresponding key.\n\n Press Enter to continue.")
+# text_instr.draw()
 # win.flip()
 # event.waitKeys()
 #---------------------------------------------------------------------------------------------------------------
@@ -336,8 +331,10 @@ trialClock = core.Clock()
 
 if expInfo['doPractice']:
 
-    text_instr.setText('Let\'s practice. \n During practice you\'ll see if you are correct or incorrect after responding. \n After practice we\'ll go again but without the correct / incorrect feedback.\n\nPress enter to begin.')
+    #show_text_with_blink("Let\'s practice. \n During practice you\'ll see if you are correct or incorrect after responding. \n After practice we\'ll go again but without the correct / incorrect feedback.\n\nPress enter to begin.", blink_count=4)
+    text_instr.setText('Let\'s practice. \n During practice you\'ll see if you are correct or incorrect after responding. \n After practice we\'ll go again but without the feedback.\n\nPress enter to begin.')
     text_instr.draw()
+
     win.callOnFlip(globalClock.reset)
     win.callOnFlip(lambda: thisExp.addData('Practice_InstrStart_globalClock', globalClock.getTime()))
     win.callOnFlip(lambda: thisExp.addData('Practice_InstrStart_coreTime', core.getTime()))
