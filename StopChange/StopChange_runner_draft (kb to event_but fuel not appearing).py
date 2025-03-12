@@ -5,8 +5,8 @@ import numpy as np
 from datetime import datetime
 from psychopy import visual, core, event, data, gui, logging
 
-from psychopy.hardware import keyboard
-kb = keyboard.Keyboard()  # create a persistent keyboard object
+# from psychopy.hardware import keyboard
+# kb = keyboard.Keyboard()  # create a persistent keyboard object
 
 # -------------------------------------------------------------------------
 # --------------------------- PARAMETERS -----------------------------------
@@ -14,7 +14,7 @@ kb = keyboard.Keyboard()  # create a persistent keyboard object
 maxResponseTime   = 1.25   # same as original
 feedbackDuration  = 0.5    # per-trial feedback in practice
 fixationSpan      = (0.25, 0.25)  # time range for fixation cross
-ITIspan           = (0.5, 1.0)    # random ITI range
+# ITIspan           = (0.5, 1.0)    # random ITI range
 # prepareBlockDur   = 2.0           # time before each block starts
 
 # Stop-signal delays (SSD) logic
@@ -334,10 +334,10 @@ for trial in practiceTrials:
     fuelStim.setAutoDraw(False)
 
     # Clear any leftover key events from the keyboard
-    kb.clearEvents()
+    # kb.clearEvents()
 
     clock = core.Clock()
-    kb.clock.reset()  # reset the keyboard clock
+    # kb.clock.reset()  # reset the keyboard clock
     win.callOnFlip(log_on_flip("PracticeTrial_onset"))
     win.callOnFlip(clock.reset)
     win.flip()
@@ -353,27 +353,38 @@ for trial in practiceTrials:
         check_for_esc()
         t = clock.getTime()
         # For STOP trials, show fuel cue after SSD delay
-        if (stopGoRaw == 'stop') and (not shownFuel) and (t >= practiceSSD):
+        if (stopGoRaw == 'stop') and (not shownFuel) and (t >= practiceSSD): #(trial['stopOrGo'] == 'stop')
             fuelStim.setAutoDraw(True)
             win.callOnFlip(log_on_flip("PracticeFuel_onset"))
             win.flip()
             shownFuel = True
 
-        keys = kb.getKeys(keyList=allResp+escapeKey, waitRelease=False)
+        #keys = event.getKeys(keyList=allResp+escapeKey, timeStamped=clock)
+        keys = event.waitKeys(maxWait=maxResponseTime - t, keyList=allResp + escapeKey, timeStamped=clock)
         if keys:
-            thisKey = keys[0]
-            key = thisKey.name
-            rt = thisKey.rt
-            if key in escapeKey:
+            pressed, rt = keys[0]
+            if pressed in escapeKey:
                 thisExp.saveAsWideText(filename+'.csv')
                 thisExp.saveAsPickle(filename)
                 win.close()
                 core.quit()
-            else:
-                responded = True
-                pressed = key
-                break
-        win.flip()
+            responded = True
+            break
+        #keys = kb.getKeys(keyList=allResp+escapeKey, waitRelease=False)
+        # if keys:
+        #     thisKey = keys[0]
+        #     key = thisKey.name
+        #     rt = thisKey.rt
+        #     if key in escapeKey:
+        #         thisExp.saveAsWideText(filename+'.csv')
+        #         thisExp.saveAsPickle(filename)
+        #         win.close()
+        #         core.quit()
+        #     else:
+        #         responded = True
+        #         pressed = key
+        #         break
+        # win.flip()
 
     planeStim.setAutoDraw(False)
     square.setAutoDraw(False)
@@ -381,7 +392,7 @@ for trial in practiceTrials:
     win.flip()
 
     # 3) Determine correctness
-    if stopGoRaw == 'go':
+    if stopGoRaw == 'go': #trial['stopOrGo'] == 'go':
         p_numGoTotal += 1
         if responded:
             if ((arrowDirRaw == 'left' and pressed in leftKeys) or 
@@ -419,6 +430,18 @@ for trial in practiceTrials:
             p_numStopFail += 1
 
 
+    '''
+    if trial['stopOrGo'] == 'go':
+        if responded and ((trial['arrowDirection'] == 'left' and pressed in leftKeys) or 
+                          (trial['arrowDirection'] == 'right' and pressed in rightKeys)):
+            wasCorrect = True
+    else:
+        if responded and pressed in downKeys:
+            wasCorrect = True
+            practiceSSD += ssdIncrement
+        else:
+            practiceSSD = max(0, practiceSSD - ssdDecrement)
+    '''
     # 4) Provide feedback (practice only)
     if wasCorrect:
         fbStim = feedback_correct
@@ -426,10 +449,10 @@ for trial in practiceTrials:
         fbStim = feedback_incorrect if responded else feedback_timeout
 
     fbStim.setAutoDraw(True)
-    itidur = random.uniform(*ITIspan)
-    win.callOnFlip(log_on_flip("PracticeITI_onset"))
+    # itidur = random.uniform(*ITIspan)
+    win.callOnFlip(log_on_flip("PracticeFeedback_onset"))#("PracticeITI_onset"))
     win.flip()
-    core.wait(itidur)
+    core.wait(feedbackDuration)#(itidur)
     fbStim.setAutoDraw(False)
     win.flip()
 
@@ -484,7 +507,7 @@ for block in mainBlocks:
     wait_for_space()
     feedbackText.setAutoDraw(False)
     win.flip()
-    # core.wait(prepareBlockDur)
+    core.wait(prepareBlockDur)
 
     trials = data.TrialHandler(
         nReps=blockReps, 
@@ -502,18 +525,16 @@ for block in mainBlocks:
     b_numStop     = 0
     b_numStopFail = 0
 
-    for trl in trials:
+    for t in trials:
         trial_num = trial_num+1
-        arrowDirRaw = trl['arrowDirection'].strip().lower()
-        stopGoRaw   = trl['stopOrGo'].strip().lower()
+        arrowDirRaw = t['arrowDirection'].strip().lower()
+        stopGoRaw   = t['stopOrGo'].strip().lower()
 
         # Fixation
-        #fixDur = random.uniform(*fixationSpan)
         fixationCross.setAutoDraw(True)
         win.callOnFlip(log_on_flip(f"Block{blockIdx}_Fix_onset"))
         win.flip()
         core.wait(FixationOnTime[trial_num])
-        #core.wait(fixDur)
         fixationCross.setAutoDraw(False)
         win.flip()
         core.wait(PostTrialWaitTime)
@@ -530,11 +551,11 @@ for block in mainBlocks:
         fuelStim.setAutoDraw(False)
         #event.clearEvents()
         # Clear any leftover key events from the keyboard
-        kb.clearEvents()
+        # kb.clearEvents()
 
 
         clock = core.Clock()
-        kb.clock.reset()  # reset the keyboard clock
+        #kb.clock.reset()  # reset the keyboard clock
         lblStart = f"Block{blockIdx}_Trial_onset"
         win.callOnFlip(log_on_flip(lblStart))
         win.callOnFlip(clock.reset)
@@ -556,21 +577,32 @@ for block in mainBlocks:
                 win.flip()
                 shownFuel = True
 
-            keys = kb.getKeys(keyList=allResp+escapeKey, waitRelease=False)
+            #keys = event.getKeys(keyList=allResp+escapeKey, timeStamped=clock)
+            keys = event.waitKeys(maxWait=maxResponseTime - t, keyList=allResp + escapeKey, timeStamped=clock)
             if keys:
-                thisKey = keys[0]
-                key = thisKey.name
-                rt = thisKey.rt
-                if key in escapeKey:
+                pressed, rt = keys[0]
+                if pressed in escapeKey:
                     thisExp.saveAsWideText(filename+'.csv')
                     thisExp.saveAsPickle(filename)
                     win.close()
                     core.quit()
-                else:
-                    responded = True
-                    pressed = key
-                    break
-            win.flip()
+                responded = True
+                break
+            # keys = kb.getKeys(keyList=allResp+escapeKey, waitRelease=False)
+            # if keys:
+            #     thisKey = keys[0]
+            #     key = thisKey.name
+            #     rt = thisKey.rt
+            #     if key in escapeKey:
+            #         thisExp.saveAsWideText(filename+'.csv')
+            #         thisExp.saveAsPickle(filename)
+            #         win.close()
+            #         core.quit()
+            #     else:
+            #         responded = True
+            #         pressed = key
+            #         break
+            # win.flip()
 
         planeStim.setAutoDraw(False)
         square.setAutoDraw(False)
@@ -615,12 +647,25 @@ for block in mainBlocks:
                 SSD = max(0, SSD - ssdDecrement)
                 p_numStopFail += 1
 
-        itidur = random.uniform(*ITIspan)
-        lblITI = f"Block{blockIdx}_ITI_onset"
-        win.callOnFlip(log_on_flip(lblITI))
-        win.flip()
-        core.wait(itidur)
-        win.flip()
+        '''
+        if trial['stopOrGo'] == 'go':
+            if responded and ((trial['arrowDirection'] == 'left' and pressed in leftKeys) or 
+                            (trial['arrowDirection'] == 'right' and pressed in rightKeys)):
+                wasCorrect = True
+        else:
+            if responded and pressed in downKeys:
+                wasCorrect = True
+                practiceSSD += ssdIncrement
+            else:
+                practiceSSD = max(0, practiceSSD - ssdDecrement)
+        '''
+
+        # itidur = random.uniform(*ITIspan)
+        # lblITI = f"Block{blockIdx}_ITI_onset"
+        # win.callOnFlip(log_on_flip(lblITI))
+        # win.flip()
+        # core.wait(itidur)
+        # win.flip()
 
         trials.addData('arrowDir', arrowDirRaw)
         trials.addData('stopOrGo', stopGoRaw)
@@ -629,7 +674,6 @@ for block in mainBlocks:
         trials.addData('rt', rt)
         trials.addData('correct', wasCorrect)
         trials.addData('trial_num', trial_num)
-        trials.addData('block_num', blockIdx)
         thisExp.nextEntry()
 
     # Optionally show block summary feedback here (if desired)
