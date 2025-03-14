@@ -296,8 +296,17 @@ else:
              "No practice. We'll go straight to main task.\n\n"
              "Press SPACE to begin.")
 
+globalClock = core.Clock()
+blockClock = core.Clock()
+trialClock = core.Clock()
+
 show_text_with_blink(instr, blink_count=4)
 
+win.callOnFlip(globalClock.reset)
+win.callOnFlip(lambda: thisExp.addData('TaskStart_globalClock', globalClock.getTime()))
+win.callOnFlip(lambda: thisExp.addData('TaskStart_coreTime', core.getTime()))
+win.callOnFlip(lambda: thisExp.addData('TaskStart_time', datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')))
+win.flip()
 # -------------------------------------------------------------------------
 # --------------------------- PRACTICE TRIALS ------------------------------
 # -------------------------------------------------------------------------
@@ -325,6 +334,12 @@ practiceSSD = initialSSD
 # win.flip()
 # core.wait(prepareBlockDur)
 
+win.callOnFlip(blockClock.reset)
+win.callOnFlip(lambda: thisExp.addData('BlockStart_globalClock', globalClock.getTime()))
+win.callOnFlip(lambda: thisExp.addData('BlockStart_blockClock', blockClock.getTime())) 
+win.callOnFlip(lambda: thisExp.addData('BlockStart_coreTime', core.getTime()))
+win.callOnFlip(lambda: thisExp.addData('BlockStart_time', datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')))
+
 trial_num = 0
 for trial in practiceTrials:
     trial_num = trial_num + 1
@@ -350,20 +365,28 @@ for trial in practiceTrials:
     else:
         planeStim.image = planeRightPath
 
+    kb.clearEvents() #moved from below to here
     #------------------------------------------------------
-    planeStim.setAutoDraw(True)
-    square.setAutoDraw(True)
+    planeStim.setAutoDraw(True)#planeStim.draw() 
+    square.setAutoDraw(True)#square.draw()  
+    win.callOnFlip(trialClock.reset)
+    win.callOnFlip(kb.clock.reset())
+    win.callOnFlip(lambda: thisExp.addData('stimulus_onset_blockClock', blockClock.getTime()))
+    win.callOnFlip(lambda: thisExp.addData('stimulus_onset_coreTime', core.getTime()))
+    win.callOnFlip(lambda: thisExp.addData('stimulus_onset_time', datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')))
+    win.flip()      
+    # planeStim.setAutoDraw(True)
+    # square.setAutoDraw(True)
     fuelStim.setAutoDraw(False)
     #-------------------------------------------------------
 
-    # Clear any leftover key events from the keyboard
-    kb.clearEvents()
+    # kb.clearEvents()
+    # kb.clock.reset()  # reset the keyboard clock
 
-    clock = core.Clock()
-    kb.clock.reset()  # reset the keyboard clock
-    win.callOnFlip(log_on_flip("PracticeTrial_onset"))
-    win.callOnFlip(clock.reset)
-    win.flip()
+    # clock = core.Clock()
+    # win.callOnFlip(log_on_flip("PracticeTrial_onset"))
+    # win.callOnFlip(clock.reset)
+    # win.flip()
 
     responded  = False
     wasCorrect = False
@@ -377,12 +400,18 @@ for trial in practiceTrials:
         t = clock.getTime()
         # For STOP trials, show fuel cue after SSD delay
         if (stopGoRaw == 'stop') and (not shownFuel) and (t >= practiceSSD):
+            #fuelStim.draw() 
             fuelStim.setAutoDraw(True)
-            win.callOnFlip(log_on_flip("PracticeFuel_onset"))
+            #win.callOnFlip(log_on_flip("Fuel_onset"))
+            win.callOnFlip(lambda: thisExp.addData('Fuel_onset_trialClock', trialClock.getTime()))
+            win.callOnFlip(lambda: thisExp.addData('Fuel_onset_blockClock', blockClock.getTime()))
+            win.callOnFlip(lambda: thisExp.addData('Fuel_onset_coreTime', core.getTime()))
+            win.callOnFlip(lambda: thisExp.addData('Fuel_onset_time', datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')))
             win.flip()
             shownFuel = True
 
         keys = kb.getKeys(keyList=allResp+escapeKey, waitRelease=False)
+
         if keys:
             thisKey = keys[0]
             key = thisKey.name
@@ -527,8 +556,14 @@ for block in mainBlocks:
     # b_numStopFail = 0
     #----------------------------------------
 
+    win.callOnFlip(blockClock.reset)
+    win.callOnFlip(lambda: thisExp.addData('BlockStart_globalClock', globalClock.getTime()))
+    win.callOnFlip(lambda: thisExp.addData('BlockStart_blockClock', blockClock.getTime())) 
+    win.callOnFlip(lambda: thisExp.addData('BlockStart_coreTime', core.getTime()))
+    win.callOnFlip(lambda: thisExp.addData('BlockStart_time', datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')))
+
     for trl in trials:
-        trial_num = trial_num + 1
+        trial_num = trial_num+1
         arrowDirRaw = trl['arrowDirection'].strip().lower()
         stopGoRaw   = trl['stopOrGo'].strip().lower()
 
@@ -552,20 +587,29 @@ for block in mainBlocks:
         else:
             planeStim.image = planeRightPath
 
-        planeStim.setAutoDraw(True)
-        square.setAutoDraw(True)
-        fuelStim.setAutoDraw(False)
-        #event.clearEvents()
-        # Clear any leftover key events from the keyboard
         kb.clearEvents()
+        #------------------------------------------------------
+        planeStim.draw() 
+        square.draw()  
+        win.callOnFlip(trialClock.reset)
+        win.callOnFlip(kb.clock.reset())
+        win.callOnFlip(lambda: thisExp.addData('stimulus_onset_blockClock', blockClock.getTime()))
+        win.callOnFlip(lambda: thisExp.addData('stimulus_onset_coreTime', core.getTime()))
+        win.callOnFlip(lambda: thisExp.addData('stimulus_onset_time', datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')))
+        win.flip()      
+        # planeStim.setAutoDraw(True)
+        # square.setAutoDraw(True)
+        # fuelStim.setAutoDraw(False)
+        #-------------------------------------------------------
 
+        # kb.clearEvents()
+        # kb.clock.reset()  # reset the keyboard clock
 
-        clock = core.Clock()
-        kb.clock.reset()  # reset the keyboard clock
-        lblStart = f"Block{blockIdx}_Trial_onset"
-        win.callOnFlip(log_on_flip(lblStart))
-        win.callOnFlip(clock.reset)
-        win.flip()
+        # clock = core.Clock()  
+        # lblStart = f"Block{blockIdx}_Trial_onset"
+        # win.callOnFlip(log_on_flip(lblStart))
+        # win.callOnFlip(clock.reset)
+        # win.flip()
 
         responded  = False
         wasCorrect = False
@@ -577,9 +621,16 @@ for block in mainBlocks:
             check_for_esc()
             t_current = clock.getTime()
             if (stopGoRaw == 'stop') and (not shownFuel) and (t_current >= SSD):
-                fuelStim.setAutoDraw(True)
-                lblFuel = f"Block{blockIdx}_Fuel_onset"
-                win.callOnFlip(log_on_flip(lblFuel))
+                #fuelStim.setAutoDraw(True)
+                #lblFuel = f"Block{blockIdx}_Fuel_onset"
+                #win.callOnFlip(log_on_flip(lblFuel))
+                #win.flip()
+                #shownFuel = True
+                fuelStim.draw()
+                win.callOnFlip(lambda: thisExp.addData('Fuel_onset_trialClock', trialClock.getTime()))
+                win.callOnFlip(lambda: thisExp.addData('Fuel_onset_blockClock', blockClock.getTime()))
+                win.callOnFlip(lambda: thisExp.addData('Fuel_onset_coreTime', core.getTime()))
+                win.callOnFlip(lambda: thisExp.addData('Fuel_onset_time', datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')))
                 win.flip()
                 shownFuel = True
 
