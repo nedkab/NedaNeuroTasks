@@ -11,7 +11,9 @@ kb = keyboard.Keyboard()  # create a persistent keyboard object
 # -------------------------------------------------------------------------
 # --------------------------- PARAMETERS -----------------------------------
 # -------------------------------------------------------------------------
-maxResponseTime   = 1.25   # same as original
+# maxResponseTime   = 1.25 
+maxResponseTime = 0.7 # update on 4/22/2025: 2.0 decreased to 0.7
+
 feedbackDuration  = 0.5    # per-trial feedback in practice
 #fixationSpan      = (0.25, 0.25)  # time range for fixation cross
 #ITIspan           = (0.5, 1.0)    # random ITI range
@@ -59,8 +61,10 @@ practiceReps = 2#4
 nMainBlocks = 3#4  
 blockReps   = 2  
 #8*2*(3+1)=64
-FixationOnTime = [random.uniform(1.5, 2.5) for _ in range(64)]#[random.uniform(1.5, 2.5) for _ in range(TotTrials)]
-PostTrialWaitTime = 0.5
+# -------------------------------------------------------------------------
+# FixationOnTime = [random.uniform(1.5, 2.5) for _ in range(64)]#[random.uniform(1.5, 2.5) for _ in range(TotTrials)]
+# PostTrialWaitTime = 0.5
+PostTrialWaitTime = [random.uniform(3, 4) for _ in range(64)]
 # -------------------------------------------------------------------------
 # --------------------------- DIALOG / SETUP -------------------------------
 # -------------------------------------------------------------------------
@@ -332,16 +336,14 @@ for trial in practiceTrials:
     stopGoRaw   = trial['stopOrGo'].strip().lower()         # 'go' or 'stop'
 
     # 1) Fixation
-    #fixDur = random.uniform(*fixationSpan)
-    fixationCross.setAutoDraw(True)
-    win.callOnFlip(log_on_flip("Fix_onset"))
-    win.flip()
-    core.wait(FixationOnTime[trial_num])
-    #core.wait(fixDur)
-    fixationCross.setAutoDraw(False)
+    # fixationCross.setAutoDraw(True)
+    # win.callOnFlip(log_on_flip("Fix_onset"))
+    # win.flip()
+    # core.wait(FixationOnTime[trial_num])
+    # fixationCross.setAutoDraw(False)
     win.callOnFlip(log_on_flip("Blank_onset"))
     win.flip()
-    core.wait(PostTrialWaitTime)
+    core.wait(PostTrialWaitTime[trial_num])
     check_for_esc()
 
     # 2) Show plane and trigger square; if STOP trial, later show fuel cue.
@@ -455,7 +457,8 @@ for trial in practiceTrials:
     fbStim.setAutoDraw(False)
     win.flip() 
 
-    practiceTrials.addData('FixationOnTime', FixationOnTime[trial_num])
+    # practiceTrials.addData('FixationOnTime', FixationOnTime[trial_num])
+    practiceTrials.addData('PostTrialWaitTime', PostTrialWaitTime[trial_num])
     practiceTrials.addData('arrowDir', arrowDirRaw)
     practiceTrials.addData('stopOrGo', stopGoRaw)
     # practiceTrials.addData('SSD_new', practiceSSD if stopGoRaw=='stop' else 0)
@@ -533,17 +536,14 @@ for block in mainBlocks:
         stopGoRaw   = trl['stopOrGo'].strip().lower()
 
         # Fixation
-        #fixDur = random.uniform(*fixationSpan)
-        fixationCross.setAutoDraw(True)
-        #win.callOnFlip(log_on_flip(f"Block{blockIdx}_Fix_onset"))
-        win.callOnFlip(log_on_flip("Fix_onset"))
-        win.flip()
-        core.wait(FixationOnTime[trial_num])
-        #core.wait(fixDur)
-        fixationCross.setAutoDraw(False)
+        # fixationCross.setAutoDraw(True)
+        # win.callOnFlip(log_on_flip("Fix_onset"))
+        # win.flip()
+        # core.wait(FixationOnTime[trial_num])
+        # fixationCross.setAutoDraw(False)
         win.callOnFlip(log_on_flip("Blank_onset"))
         win.flip()
-        core.wait(PostTrialWaitTime)
+        core.wait(PostTrialWaitTime[trial_num])
         check_for_esc()
 
         # Plane and square; display fuel cue for STOP trials after SSD delay
@@ -643,7 +643,8 @@ for block in mainBlocks:
         # core.wait(itidur)
         # win.flip()
 
-        trials.addData('FixationOnTime', FixationOnTime[trial_num])
+        # trials.addData('FixationOnTime', FixationOnTime[trial_num])
+        trials.addData('PostTrialWaitTime', PostTrialWaitTime[trial_num])
         trials.addData('arrowDir', arrowDirRaw)
         trials.addData('stopOrGo', stopGoRaw)
         #trials.addData('SSD_new', SSD if stopGoRaw=='stop' else 0)
