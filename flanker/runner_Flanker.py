@@ -64,18 +64,27 @@ test_stimuli = [
 correct_responses = {'images/rrlrr.png': 'left', 'images/llrll.png': 'right', 'images/lllll.png': 'left', 'images/rrrrr.png': 'right'}
 
 StimuliPool =  ['images/rrlrr.png', 'images/llrll.png', 'images/lllll.png', 'images/rrrrr.png']
-imgSize = (0.1, 0.1)
+# -------------------------------------------------------------------------
+# imgSize = (0.1, 0.1) # 10 % of screen height
+desired_height   = 0.05          # 10 % of screen height
+orig_w, orig_h   = Image.open('images/lllll.png').size
+aspect           = orig_w / orig_h
+imgSize     = (desired_height * aspect, desired_height)
 # -------------------------------------------------------------------------
 attention_check_thresh = 0.65
-maxResponseTime = 2.0 
+maxResponseTime = 0.7 # update on 4/22/2025: 2.0 decreased to 0.7
 FeedbackOnTime = 0.5 
 practice_len = 5
 num_blocks = 3
 num_trials = 20
 exp_len = 60
 # -------------------------------------------------------------------------
-FixationOnTime = [random.uniform(1.5, 2.5) for _ in range(exp_len + practice_len )]#[random.uniform(1.5, 2.5) for _ in range(TotTrials)]
-PostTrialWaitTime = 0.5
+#update on 4/22/2025: VB suggested Removing fixation, increasing blank screen duration to the mean of 3.5 sec.
+# FixationOnTime = [random.uniform(1.5, 2.5) for _ in range(exp_len + practice_len )]
+# PostTrialWaitTime = 0.5
+# -------------------------------------------------------------------------
+PostTrialWaitTime = [random.uniform(3, 4) for _ in range(exp_len + practice_len )]
+# -------------------------------------------------------------------------
 
 within_block_trial = 1
 current_block = 0
@@ -138,14 +147,22 @@ thisExp.addLoop(block1)
 thisExp.addLoop(block2)
 thisExp.addLoop(block3)
 
+# trial_image = visual.ImageStim(
+#     win=win,
+#     name='trial_image', 
+#     image='sin', mask=None, anchor='center',
+#     ori=0.0, pos=(0, 0), 
+#     color=[1,1,1], colorSpace='rgb', opacity=None,
+#     flipHoriz=False, flipVert=False,
+#     texRes=128.0, interpolate=True, depth=-1.0)
 trial_image = visual.ImageStim(
     win=win,
-    name='trial_image', 
-    image='sin', mask=None, anchor='center',
-    ori=0.0, pos=(0, 0), 
-    color=[1,1,1], colorSpace='rgb', opacity=None,
-    flipHoriz=False, flipVert=False,
-    texRes=128.0, interpolate=True, depth=-1.0)
+    name='trial_image',
+    image='sin',
+    size=imgSize,          # <-- keeps aspect ratio
+    anchor='center',
+    ori=0.0, pos=(0, 0),
+    color=[1,1,1], colorSpace='rgb', interpolate=True, units='height')
 
 square_size = 0.1 
 square_position = (0.8 - square_size / 2, -0.5 + square_size / 2)
@@ -222,7 +239,7 @@ def run_trials(trials, stage):
         win.callOnFlip(lambda: thisExp.addData('stimulus_onset_coreTime', core.getTime()))
         win.callOnFlip(lambda: thisExp.addData('stimulus_onset_time', datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')))
         win.flip()      
-        keys  = event.waitKeys(maxWait=maxResponseTime, keyList=allKeys, timeStamped=trialClock)
+        keys  = event.waitKeys(maxWait=maxResponseTime, keyList=allKeys, timeStamped=trialClock, clearEvents=True) #clearEvents=True was added on 4/22/2025
 
         if keys:
             response, timestamp = keys[0]
@@ -238,21 +255,22 @@ def run_trials(trials, stage):
             timestamp = None
             correct = False
             feedback = timeout_feedback
-        if doShowTextFeedback:
+        if doShowTextFeedback: # practice only
             feedback.draw()
             win.flip()
             core.wait(FeedbackOnTime) 
-        fixation.draw()
+        # fixation.draw()
 
         win.callOnFlip(lambda: thisExp.addData('ITI_onset_trialClock', trialClock.getTime()))
         win.callOnFlip(lambda: thisExp.addData('ITI_onset_blockClock', blockClock.getTime()))
         win.callOnFlip(lambda: thisExp.addData('ITI_onset_coreTime', core.getTime()))
         win.callOnFlip(lambda: thisExp.addData('ITI_onset_time', datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')))
-        win.flip()
-        core.wait(FixationOnTime[trial_num])
-        check_for_escape()  
+        # win.flip()
+        # core.wait(FixationOnTime[trial_num])
+        # check_for_escape()  
         win.flip() 
-        core.wait(PostTrialWaitTime)
+        core.wait(PostTrialWaitTime[trial_num])#core.wait(PostTrialWaitTime)
+        check_for_escape() 
         trials.addData('stimulus', trial['image'])
         trials.addData('stage', stage)
         thisExp.addData('participant', expInfo['participant'])
@@ -266,7 +284,8 @@ def run_trials(trials, stage):
         thisExp.addData('response', response)
         thisExp.addData('correct', correct) 
         thisExp.addData('RT', timestamp)
-        thisExp.addData('FixationOnTime', FixationOnTime[trial_num])
+        # thisExp.addData('FixationOnTime', FixationOnTime[trial_num])
+        thisExp.addData('PostTrialWaitTime', PostTrialWaitTime[trial_num])
         thisExp.nextEntry()
 
 #--------------------------------------------------------------------------------------------------------------
