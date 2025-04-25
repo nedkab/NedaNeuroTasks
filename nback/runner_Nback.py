@@ -55,15 +55,17 @@ run_attention_checks = True
 attention_check_thresh = 0.65
 credit_var = True
 
-maxResponseTime = 2.0 
+maxResponseTime = 1.0 #2.0 
 FeedbackOnTime = 0.5
 
 num_blocks = 9
 num_trials = 20
 
-FixationOnTime = [random.uniform(1.5, 2.5) for _ in range(num_blocks * num_trials)]
+# update on 4/25/2025
+# FixationOnTime = [random.uniform(3, 4) for _ in range(num_blocks * num_trials)]
+# PostTrialWaitTime = 0.5
+PostTrialWaitTime = [random.uniform(3, 4) for _ in range(num_blocks * num_trials)]
 
-PostTrialWaitTime = 0.5
 delay = 1
 within_block_trial = 1
 current_block = 0
@@ -450,16 +452,16 @@ def run_trials(trials, stage):
             feedback.draw()
             win.flip()
             core.wait(FeedbackOnTime)
-        fixation.draw()
+        #fixation.draw()
         win.callOnFlip(lambda: thisExp.addData('ITI_onset_trialClock', trialClock.getTime()))
         win.callOnFlip(lambda: thisExp.addData('ITI_onset_blockClock', blockClock.getTime()))
         win.callOnFlip(lambda: thisExp.addData('ITI_onset_coreTime', core.getTime()))
         win.callOnFlip(lambda: thisExp.addData('ITI_onset_time', datetime.now().strftime('%Y-%m-%d_%H:%M:%S.%f')))
-        win.flip()
-        core.wait(FixationOnTime[trial_num])
+        # win.flip()
+        # core.wait(FixationOnTime[trial_num])
         check_for_escape()            
         win.flip()
-        core.wait(PostTrialWaitTime)
+        core.wait(PostTrialWaitTime[trial_num])
         correct_responses[trial_num] = correct
         thisExp.addData('participant', expInfo['participant'])
         thisExp.addData('session', expInfo['session'])
@@ -471,7 +473,8 @@ def run_trials(trials, stage):
         thisExp.addData('response', response)
         thisExp.addData('correct', correct) 
         thisExp.addData('RT', timestamp)
-        thisExp.addData('FixationOnTime', FixationOnTime[trial_num])
+        # thisExp.addData('FixationOnTime', FixationOnTime[trial_num])
+        thisExp.addData('PostTrialWaitTime', PostTrialWaitTime[trial_num])
         thisExp.nextEntry()
 
     return correct_responses
