@@ -72,7 +72,7 @@ aspect           = orig_w / orig_h
 imgSize     = (desired_height * aspect, desired_height)
 # -------------------------------------------------------------------------
 attention_check_thresh = 0.65
-maxResponseTime = 0.7 # update on 4/22/2025: 2.0 decreased to 0.7
+maxResponseTime = 1 # update on 4/22/2025: 2.0 decreased to 0.7
 FeedbackOnTime = 0.5 
 practice_len = 5
 num_blocks = 3

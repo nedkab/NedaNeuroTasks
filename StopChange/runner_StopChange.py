@@ -12,7 +12,7 @@ kb = keyboard.Keyboard()  # create a persistent keyboard object
 # --------------------------- PARAMETERS -----------------------------------
 # -------------------------------------------------------------------------
 # maxResponseTime   = 1.25 
-maxResponseTime = 0.7 # update on 4/22/2025: 2.0 decreased to 0.7
+maxResponseTime = 1 # update on 4/22/2025: 2.0 decreased to 0.7
 
 feedbackDuration  = 0.5    # per-trial feedback in practice
 #fixationSpan      = (0.25, 0.25)  # time range for fixation cross
