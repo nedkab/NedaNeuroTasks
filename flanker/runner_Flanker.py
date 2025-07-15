@@ -76,8 +76,8 @@ maxResponseTime = 1 # update on 4/22/2025: 2.0 decreased to 0.7
 FeedbackOnTime = 0.5 
 practice_len = 5
 num_blocks = 3
-num_trials = 20
-exp_len = 60
+num_trials = 30 #20 changed on 7/15/2025
+exp_len = 90# 60 changed on 7/15/2025
 # -------------------------------------------------------------------------
 #update on 4/22/2025: VB suggested Removing fixation, increasing blank screen duration to the mean of 3.5 sec.
 # FixationOnTime = [random.uniform(1.5, 2.5) for _ in range(exp_len + practice_len )]
@@ -135,9 +135,9 @@ test_nReps = (exp_len // len(test_stimuli)) + 1
 test_stimuli_with_reps = test_stimuli * test_nReps
 random.shuffle(test_stimuli_with_reps)
 
-block1_trials = test_stimuli_with_reps[:20]
-block2_trials = test_stimuli_with_reps[20:40]
-block3_trials = test_stimuli_with_reps[40:60]
+block1_trials = test_stimuli_with_reps[:30]  #changed on 7/15/2025  test_stimuli_with_reps[:20]
+block2_trials = test_stimuli_with_reps[30:60] #changed on 7/15/2025  test_stimuli_with_reps[20:40]
+block3_trials = test_stimuli_with_reps[60:90] #changed on 7/15/2025  test_stimuli_with_reps[40:60]
 block1 = data.TrialHandler(trialList=block1_trials, nReps=1, method='sequential')
 block2 = data.TrialHandler(trialList=block2_trials, nReps=1, method='sequential')
 block3 = data.TrialHandler(trialList=block3_trials, nReps=1, method='sequential')

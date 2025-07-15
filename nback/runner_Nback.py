@@ -59,7 +59,7 @@ maxResponseTime = 1.0 #2.0
 FeedbackOnTime = 0.5
 
 num_blocks = 9
-num_trials = 20
+num_trials = 30 #20 changed on 7/15/2025
 
 # update on 4/25/2025
 # FixationOnTime = [random.uniform(3, 4) for _ in range(num_blocks * num_trials)]
@@ -387,11 +387,15 @@ fixation = visual.TextStim(win, text='+', color='white')
 def create_trials(objects, num_trials, delay):
     trials = []
 
+    '''
     # Use 10 trials for 1-back blocks, 20 for others.
     if delay == 1:
         block_trial_count = 10
     else:
         block_trial_count = num_trials
+    '''
+    # changed all block_trial_count to num_trials,  on 7/15/2025
+    block_trial_count = num_trials
 
     #stim_sequence = gen_set(objects, delay)
     stim_sequence = gen_set(objects, delay, sequence_length=block_trial_count)
@@ -542,6 +546,7 @@ trialClock = core.Clock()
 if expInfo['doPractice']:
     practice_trials = []
     practice_trials = create_trials(objects, num_trials, 1)
+    practice_trials = practice_trials[0:6]
     text_instr1.setText('Let\'s practice. During practice you\'ll see if you are correct or incorrect after responding. After practice we\'ll go again but without the correct / incorrect feedback.\n\nPress enter to begin.')
     text_instr1.draw()
     win.callOnFlip(globalClock.reset)
