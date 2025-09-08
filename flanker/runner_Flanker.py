@@ -76,14 +76,18 @@ maxResponseTime = 1 # update on 4/22/2025: 2.0 decreased to 0.7
 FeedbackOnTime = 0.5 
 practice_len = 5
 num_blocks = 3
-num_trials = 30 #20 changed on 7/15/2025
-exp_len = 90# 60 changed on 7/15/2025
+num_trials = 40 #30->40 on 9/8/2025 #20 changed on 7/15/2025
+exp_len = 120 #90->120 on 9/8/2025   # 60 changed on 7/15/2025
 # -------------------------------------------------------------------------
 #update on 4/22/2025: VB suggested Removing fixation, increasing blank screen duration to the mean of 3.5 sec.
 # FixationOnTime = [random.uniform(1.5, 2.5) for _ in range(exp_len + practice_len )]
 # PostTrialWaitTime = 0.5
 # -------------------------------------------------------------------------
-PostTrialWaitTime = [random.uniform(3, 4) for _ in range(exp_len + practice_len )]
+# changes made on August 2025:
+# PostTrialWaitTime = [random.uniform(3, 4) for _ in range(exp_len + practice_len )]
+Blank1Time = [random.uniform(0.8, 1.2) for _ in range(exp_len + practice_len )]
+FixationOnTime = [random.uniform(0.5, 0.7) for _ in range(exp_len + practice_len )]
+Blank2Time = [random.uniform(0.8, 1.2) for _ in range(exp_len + practice_len )]
 # -------------------------------------------------------------------------
 
 within_block_trial = 1
@@ -232,6 +236,25 @@ def run_trials(trials, stage):
         preloaded_image = preloadedImages.get(trial['image'])
         trial_image.image = preloaded_image
 
+        # added in August 2025 --------------------------------------------------------------------------------------------------------------------------------
+        # To implement new sequence (Blank1 → Fixation → Blank2 → Trial Image), I need to insert extra drawing/waiting steps before the trial image is shown.       
+        # --- Blank1 ---
+        win.flip()  
+        core.wait(Blank1Time[trial_num])  
+        check_for_escape()
+
+        # --- Fixation ---
+        fixation.draw()
+        win.flip()
+        core.wait(FixationOnTime[trial_num])
+        check_for_escape()
+
+        # --- Blank2 ---
+        win.flip()
+        core.wait(Blank2Time[trial_num])
+        check_for_escape()
+        # ------------------------------------------------------------------------------------------------------------------------------------------------------
+
         trial_image.draw() 
         square.draw()  
         win.callOnFlip(trialClock.reset)
@@ -268,8 +291,10 @@ def run_trials(trials, stage):
         # win.flip()
         # core.wait(FixationOnTime[trial_num])
         # check_for_escape()  
-        win.flip() 
-        core.wait(PostTrialWaitTime[trial_num])#core.wait(PostTrialWaitTime)
+
+        # win.flip() # commented in August 2025 
+        # core.wait(PostTrialWaitTime[trial_num])#core.wait(PostTrialWaitTime) # commented in August 2025 
+        
         check_for_escape() 
         trials.addData('stimulus', trial['image'])
         trials.addData('stage', stage)
@@ -284,8 +309,11 @@ def run_trials(trials, stage):
         thisExp.addData('response', response)
         thisExp.addData('correct', correct) 
         thisExp.addData('RT', timestamp)
-        # thisExp.addData('FixationOnTime', FixationOnTime[trial_num])
-        thisExp.addData('PostTrialWaitTime', PostTrialWaitTime[trial_num])
+        # thisExp.addData('PostTrialWaitTime', PostTrialWaitTime[trial_num])# commented in August 2025 
+        thisExp.addData('Blank1Time', Blank1Time[trial_num])# added in August 2025 
+        thisExp.addData('FixationOnTime', FixationOnTime[trial_num])# added in August 2025 
+        thisExp.addData('Blank2Time', Blank2Time[trial_num])# added in August 2025 
+
         thisExp.nextEntry()
 
 #--------------------------------------------------------------------------------------------------------------

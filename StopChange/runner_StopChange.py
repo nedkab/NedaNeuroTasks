@@ -55,16 +55,23 @@ practiceConditionsFile = 'PracticeTrialConditions.csv'
 mainConditionsFile     = 'MainTrialConditions.csv'
 
 # Number of practice reps (4 if doPractice, else 0)
-practiceReps = 2#4  
+practiceReps = 1 # changed 2 to 1 on 9/8/2025 
 
 # Number of main blocks and repetitions within each block
-nMainBlocks = 3#4  
-blockReps   = 2  
+nMainBlocks = 4 # changed 3 to 4 on 9/8/2025 
+blockReps   = 3 # changed 2 to 3 on 9/8/2025 
 #8*2*(3+1)=64
+#8*3*(4)+(8*1*1)=104 # added on 9/8/2025  
 # -------------------------------------------------------------------------
 # FixationOnTime = [random.uniform(1.5, 2.5) for _ in range(64)]#[random.uniform(1.5, 2.5) for _ in range(TotTrials)]
-# PostTrialWaitTime = 0.5
-PostTrialWaitTime = [random.uniform(3, 4) for _ in range(64)]
+
+# -------------------------------------------------------------------------
+# chnages made on August 2025:
+# PostTrialWaitTime = [random.uniform(3, 4) for _ in range(64)] # PostTrialWaitTime = 0.5
+Blank1Time = [random.uniform(0.8, 1.2) for _ in range(104)] # changed 64 to 120 on 9/8/2025 
+FixationOnTime = [random.uniform(0.5, 0.7) for _ in range(104)] # changed 64 to 120 on 9/8/2025 
+Blank2Time = [random.uniform(0.8, 1.2) for _ in range(104)] # changed 64 to 120 on 9/8/2025 
+
 # -------------------------------------------------------------------------
 # --------------------------- DIALOG / SETUP -------------------------------
 # -------------------------------------------------------------------------
@@ -335,6 +342,8 @@ for trial in practiceTrials:
     arrowDirRaw = trial['arrowDirection'].strip().lower()  # 'left' or 'right'
     stopGoRaw   = trial['stopOrGo'].strip().lower()         # 'go' or 'stop'
 
+    # changes made on August 2025: ---------------------------------------------------------------------------
+    '''
     # 1) Fixation
     # fixationCross.setAutoDraw(True)
     # win.callOnFlip(log_on_flip("Fix_onset"))
@@ -345,6 +354,23 @@ for trial in practiceTrials:
     win.flip()
     core.wait(PostTrialWaitTime[trial_num])
     check_for_esc()
+    '''
+    # --- Blank1 ---
+    win.flip()
+    core.wait(Blank1Time[trial_num])
+    check_for_esc()
+
+    # --- Fixation ---
+    fixationCross.draw()
+    win.flip()
+    core.wait(FixationOnTime[trial_num])
+    check_for_esc()
+
+    # --- Blank2 ---
+    win.flip()
+    core.wait(Blank2Time[trial_num])
+    check_for_esc()
+    # -------------------------------------------------------------------------------------------------------
 
     # 2) Show plane and trigger square; if STOP trial, later show fuel cue.
     if arrowDirRaw == 'left':
@@ -458,7 +484,10 @@ for trial in practiceTrials:
     win.flip() 
 
     # practiceTrials.addData('FixationOnTime', FixationOnTime[trial_num])
-    practiceTrials.addData('PostTrialWaitTime', PostTrialWaitTime[trial_num])
+    # practiceTrials.addData('PostTrialWaitTime', PostTrialWaitTime[trial_num]) # commented in August 2025 
+    practiceTrials.addData('Blank1Time', Blank1Time[trial_num])# added in August 2025 
+    practiceTrials.addData('FixationOnTime', FixationOnTime[trial_num])# added in August 2025 
+    practiceTrials.addData('Blank2Time', Blank2Time[trial_num])# added in August 2025  
     practiceTrials.addData('arrowDir', arrowDirRaw)
     practiceTrials.addData('stopOrGo', stopGoRaw)
     # practiceTrials.addData('SSD_new', practiceSSD if stopGoRaw=='stop' else 0)
@@ -535,6 +564,8 @@ for block in mainBlocks:
         arrowDirRaw = trl['arrowDirection'].strip().lower()
         stopGoRaw   = trl['stopOrGo'].strip().lower()
 
+        # changes made on August 2025: ---------------------------------------------------------------------------
+        '''
         # Fixation
         # fixationCross.setAutoDraw(True)
         # win.callOnFlip(log_on_flip("Fix_onset"))
@@ -545,6 +576,23 @@ for block in mainBlocks:
         win.flip()
         core.wait(PostTrialWaitTime[trial_num])
         check_for_esc()
+        '''
+        # --- Blank1 ---
+        win.flip()
+        core.wait(Blank1Time[trial_num])
+        check_for_esc()
+
+        # --- Fixation ---
+        fixationCross.draw()
+        win.flip()
+        core.wait(FixationOnTime[trial_num])
+        check_for_esc()
+
+        # --- Blank2 ---
+        win.flip()
+        core.wait(Blank2Time[trial_num])
+        check_for_esc()
+        # -------------------------------------------------------------------------------------------------------
 
         # Plane and square; display fuel cue for STOP trials after SSD delay
         if arrowDirRaw == 'left':
@@ -644,7 +692,11 @@ for block in mainBlocks:
         # win.flip()
 
         # trials.addData('FixationOnTime', FixationOnTime[trial_num])
-        trials.addData('PostTrialWaitTime', PostTrialWaitTime[trial_num])
+        # trials.addData('PostTrialWaitTime', PostTrialWaitTime[trial_num])# commented in August 2025 
+        trials.addData('Blank1Time', Blank1Time[trial_num])# added in August 2025 
+        trials.addData('FixationOnTime', FixationOnTime[trial_num])# added in August 2025 
+        trials.addData('Blank2Time', Blank2Time[trial_num])# added in August 2025
+
         trials.addData('arrowDir', arrowDirRaw)
         trials.addData('stopOrGo', stopGoRaw)
         #trials.addData('SSD_new', SSD if stopGoRaw=='stop' else 0)
